@@ -1,10 +1,7 @@
 require 'rubygems'
 require 'test/unit'
-require 'shoulda'
+require 'spec'
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'sanitize-url'
-
-class Test::Unit::TestCase
-end
