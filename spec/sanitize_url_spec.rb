@@ -36,7 +36,7 @@ describe SanitizeUrl do
 			end
 		end
 		
-		context 'with :protocols whitelist' do
+		context 'with :schemes whitelist' do
 			it 'kills anything not on the list' do
 				[
 					'https://example.com',
@@ -48,7 +48,7 @@ describe SanitizeUrl do
 					'javascript://example.com',
 					'javascript:example.com',
 				].each do |evil_url|
-					sanitize_url(evil_url, :protocols => ['http'], :replace_evil_with => 'replaced')
+					sanitize_url(evil_url, :schemes => ['http'], :replace_evil_with => 'replaced')
 				end
 			end
 			
@@ -57,16 +57,16 @@ describe SanitizeUrl do
 					'http://example.com',
 					'https://example.com'
 				].each do |good_url|
-					sanitize_url(good_url, :protocols => ['http', 'https']).should == good_url
+					sanitize_url(good_url, :schemes => ['http', 'https']).should == good_url
 				end
 			end
 		end
 		
-		it 'prepends http:// if no protocol is given' do
+		it 'prepends http:// if no scheme is given' do
 			sanitize_url('www.example.com').should == 'http://www.example.com'
 		end
 		
-		it 'replaces evil URLs that are encoded with numerical character references' do
+		it 'replaces evil URLs that are encoded with Unicode numerical character references' do
 			[
 				'&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;&#108;&#101;&#114;&#116;&#40;&#39;&#49;&#39;&#41;',
 				'&#x6A;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3A;&#x61;&#x6C;&#x65;&#x72;&#x74;&#x28;&#x27;&#x32;&#x27;&#x29;'
@@ -75,96 +75,90 @@ describe SanitizeUrl do
 			end
 		end
 		
-		it 'fixes common mistakes in the protocol' do
-			sanitize_url('http//www.example.com').should == 'http://www.example.com'
-			sanitize_url('http/www.example.com').should == 'http://www.example.com'
-			sanitize_url('http:www.example.com').should == 'http://www.example.com'
-			sanitize_url('http:/www.example.com').should == 'http://www.example.com'
-			sanitize_url('http//:www.example.com').should == 'http://www.example.com'
+		it 'replaces evil URLs that are URL-encoded (hex with %)' do
+			sanitize_url('%6A%61%76%61%73%63%72%69%70%74%3A%61%6C%65%72%74%28%22%58%53%53%22%29', :replace_evil_with => 'replaced').should == 'replaced'
 		end
 		
-		it 'does not try to fix broken protocols after the start of the string' do
+		it 'does not try to fix broken schemes after the start of the string' do
 			sanitize_url('http://example.com/http/foo').should == 'http://example.com/http/foo'
 		end
 		
-		it 'does not prepend an extra http:// if a valid protocol is given' do
+		it 'does not prepend an extra http:// if a valid scheme is given' do
 			sanitize_url('http://www.example.com').should == 'http://www.example.com'
 			sanitize_url('https://www.example.com').should == 'https://www.example.com'
 			sanitize_url('ftp://www.example.com').should == 'ftp://www.example.com'
 		end
+		
+		it 'dereferences URL-encoded characters in the scheme' do
+			sanitize_url('h%74tp://example.com').should == 'http://example.com'
+		end
+		
+		it 'dereferences decimal numeric character references in the scheme' do
+			sanitize_url('h&#116;tp://example.com').should == 'http://example.com'
+		end
+		
+		it 'dereferences hex numeric character references in the scheme' do
+			sanitize_url('h&#x74;tp://example.com').should == 'http://example.com'
+		end
+		
+		it 'retains URL-encoded characters in the opaque portion' do
+			sanitize_url('http://someone%40gmail.com:password@example.com').should == 'http://someone%40gmail.com:password@example.com'
+		end
+		
+		it 'URL-encodes code points outside ASCII' do
+			# Percent-encoding should be in UTF-8 (RFC 3986).
+			# http://en.wikipedia.org/wiki/Percent-encoding#Current_standard
+			sanitize_url('http://&#1044;').should == 'http://%D0%94'
+			sanitize_url('http://&#x0414;').should == 'http://%D0%94'
+			sanitize_url("http://\xD0\x94").should == 'http://%D0%94' # UTF-8 version of the same.
+		end
+		
+		it 'replaces URLs without the opaque portion' do
+			sanitize_url('http://', :replace_evil_with => 'replaced').should == 'replaced'
+			sanitize_url('mailto:', :replace_evil_with => 'replaced').should == 'replaced'
+		end
+		
+		it 'adds the two slashes for known schemes that require it' do
+			sanitize_url('http:example.com').should == 'http://example.com'
+			sanitize_url('ftp:example.com').should == 'ftp://example.com'
+			sanitize_url('svn+ssh:example.com').should == 'svn+ssh://example.com'
+		end
+		
+		it 'does not add slashes for schemes that do not require it' do
+			sanitize_url('mailto:someone@example.com').should == 'mailto:someone@example.com'
+		end
+		
+		it 'strips invalid characters from the scheme and then evaluates the scheme according to the normal rules' do
+			sanitize_url("ht\xD0\x94tp://example.com").should == 'http://example.com'
+			sanitize_url('htt$p://example.com').should == 'http://example.com'
+			sanitize_url('j%avascript:alert("XSS")', :replace_evil_with => 'replaced').should == 'replaced'
+		end
 	end
+		
 	
-	describe '.decode_numeric_references' do
-		it 'decodes numbers' do
-			(0..9).each do |digit|
-				# Digit code points start at decimal 48
-				SanitizeUrl.decode_numeric_references('&#' + (48 + digit).to_s + ';').should == digit.to_s
-			end
-		end
-		
-		it 'decodes lowercase letters' do
-			# Lowercase code point range is 97-122
-			(97..122).each do |code_point|
-				SanitizeUrl.decode_numeric_references('&#' + code_point.to_s + ';').should == code_point.chr
-			end
-		end
-		
-		it 'decodes uppercase letters' do
-			# Uppercase code point range is 65-90
-			(65..90).each do |code_point|
-				SanitizeUrl.decode_numeric_references('&#' + code_point.to_s + ';').should == code_point.chr
-			end
-		end
-		
-		it 'decodes forward slashes' do
-			SanitizeUrl.decode_numeric_references('&#47').should == '/'
-		end
-		
-		it 'decodes colons' do
-			SanitizeUrl.decode_numeric_references('&#58').should == ':'
-		end
-		
-		it 'does not decode special characters other than forward slashes and colons' do
-			# Anything between 0 and 127 excluding 48-57, 65-90, and 97-122
-			((0..46).to_a + (59..64).to_a + (91..96).to_a + (123..127).to_a).each do |code_point|
-				reference = '&#' + code_point.to_s + ';'
-				SanitizeUrl.decode_numeric_references(reference).should == reference
-			end
-		end
-		
-		it 'does not decode references to characters outside the ASCII range' do
-			# Hebrew Alef as a Unicode code point, in hex and decimal
-			SanitizeUrl.decode_numeric_references('&#x05D0;').should == '&#x05D0;'
-			SanitizeUrl.decode_numeric_references('&#1488').should == '&#1488'
-		end
-		
+	describe '.dereference_numerics' do				
 		it 'decodes short-form decimal UTF-8 character references with a semicolon' do
-			SanitizeUrl.decode_numeric_references('&#106;').should == 'j'
+			SanitizeUrl.dereference_numerics('&#106;').should == 'j'
 		end
 		
 		it 'decodes short-form decimal UTF-8 character references without a semicolon' do
-			SanitizeUrl.decode_numeric_references('&#106').should == 'j'
+			SanitizeUrl.dereference_numerics('&#106').should == 'j'
 		end
 		
 		it 'decodes long-form decimal UTF-8 character references with a semicolon' do
-			SanitizeUrl.decode_numeric_references('&#0000106;').should == 'j'
+			SanitizeUrl.dereference_numerics('&#0000106;').should == 'j'
 		end
 		
 		it 'decodes long-form decimal UTF-8 character references without a semicolon' do
-			SanitizeUrl.decode_numeric_references('&#0000106').should == 'j'
+			SanitizeUrl.dereference_numerics('&#0000106').should == 'j'
 		end
 		
 		it 'decodes hex UTF-8 character references with a semicolon' do
-			SanitizeUrl.decode_numeric_references('&#x6A;').should == 'j'
+			SanitizeUrl.dereference_numerics('&#x6A;').should == 'j'
 		end
 		
 		it 'decodes hex UTF-8 character references without a semicolon' do
-			SanitizeUrl.decode_numeric_references('&#x6A').should == 'j'
-		end
-		
-		it 'passes through multi-byte UTF-8 characters that are not URL-encoded' do
-			# Hebrew Alef in UTF-8
-			SanitizeUrl.decode_numeric_references("\xD7\x90").should == "\xD7\x90"
+			SanitizeUrl.dereference_numerics('&#x6A').should == 'j'
 		end
 	end
 end
