@@ -13,6 +13,10 @@ module SanitizeUrl
 	
 	HTTP_STYLE_SCHEMES = ['http', 'https', 'ftp', 'ftps', 'svn', 'svn+ssh', 'git'] # Common schemes whose format should be "scheme://" instead of "scheme:"
 	
+	# Sanitize the URL. Example usage:
+	#   sanitize_url('javascript:alert("XSS")')
+	#   sanitize_url('javascript:alert("XSS")', :replace_evil_with => 'Replaced')
+	#   sanitize_url('ftp://example.com', :schemes => ['http', 'https'])
 	def sanitize_url(url, options = {})
 		raise(ArgumentError, 'options[:schemes] must be an array') if options.has_key?(:schemes) and !options[:schemes].is_a?(Array)
 		options = {
@@ -59,7 +63,7 @@ module SanitizeUrl
 			end
 		end
 		
-		if options[:schemes].include?(scheme.downcase)
+		if options[:schemes].collect { |s| s.to_s }.include?(scheme.downcase)
 			if HTTP_STYLE_SCHEMES.include?(scheme.downcase) and !opaque.match(/^\/\//)
 				# It's an HTTP-like scheme, but the two slashes are missing. We'll fix that as a courtesy.
 				url = scheme + '://' + opaque
@@ -73,7 +77,7 @@ module SanitizeUrl
 		end
 	end	
 	
-	def self.dereference_numerics(str)
+	def self.dereference_numerics(str) #:nodoc:
 		# Decimal code points, e.g. &#106; &#106 &#0000106; &#0000106
 		str = str.gsub(/&#([a-fA-f0-9]+);?/) do
 			char_or_url_encoded($1.to_i)
@@ -87,7 +91,7 @@ module SanitizeUrl
 	# Return either the literal char or the URL-encoded equivalent,
 	# depending on our normalization rules. Requires a decimal
 	# code point. Code point can be outside the single-byte range.
-	def self.char_or_url_encoded(code)
+	def self.char_or_url_encoded(code) #:nodoc:
 		if url_encode?(code)
 			utf_8_str = ([code.to_i].pack('U'))
 			'%' + utf_8_str.unpack('H2' * utf_8_str.length).join('%').upcase
@@ -98,7 +102,7 @@ module SanitizeUrl
 	
 	# Should we URL-encode the byte?
 	# Must receive an integer code point
-	def self.url_encode?(code)
+	def self.url_encode?(code) #:nodoc:
 		!(
 			(code >= 48 and code <= 57)  or   # Numbers
 			(code >= 65 and code <= 90)  or   # Uppercase

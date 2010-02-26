@@ -60,6 +60,11 @@ describe SanitizeUrl do
 					sanitize_url(good_url, :schemes => ['http', 'https']).should == good_url
 				end
 			end
+			
+			it 'works with schemes given as symbols' do
+				sanitize_url('ftp://example.com', :schemes => [:http, :https], :replace_evil_with => 'replaced').should == 'replaced'
+				sanitize_url('ftp://example.com', :schemes => [:http, :https, :ftp]).should == 'ftp://example.com'
+			end
 		end
 		
 		it 'prepends http:// if no scheme is given' do
