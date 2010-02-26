@@ -1,7 +1,7 @@
 sanitize-url
 ============
 
-This gem provides a module called `SanitizeUrl`, which you can mix-in anywhere you like. It provides a single method: `sanitize_url`, which accepts a URL and returns one with JavaScript removed and `http://` prepended if necessary. It also prepends the http:// scheme if no valid scheme is found.
+This gem provides a module called `SanitizeUrl`, which you can mix-in anywhere you like. It provides a single method: `sanitize_url`, which accepts a URL and returns one with JavaScript removed. It also prepends the `http://` scheme if no valid scheme is found.
 
 Why do you need this? Because attackers can sneak JavaScript into URLs, and some browsers may execute it. Say, for example, you have a web app that lets users post links. If you don't sanitize the URLs, you may have a cross-site-scripting vulnerability on your hands. More commonly, well-intentioned users will type URLs without prepending a protocol. If you render these URLs as-in your links, the browser will interpret them as links within your own site, e.g. `http://your-site.com/www.site-they-linked-to.com`.
 

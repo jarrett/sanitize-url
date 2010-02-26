@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["jarrett"]
   s.date = %q{2010-02-25}
-  s.description = %q{TODO: longer description of your gem}
+  s.description = %q{This gem provides a module called SanitizeUrl, which you can mix-in anywhere you like. It provides a single method: sanitize_url, which accepts a URL and returns one with JavaScript removed. It also prepends the http:// scheme if no valid scheme is found.}
   s.email = %q{jarrett@uchicago.edu}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -33,7 +33,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.5}
-  s.summary = %q{TODO: one-line summary of your gem}
+  s.summary = %q{Sanitizes untrusted URLs}
   s.test_files = [
     "spec/sanitize_url_spec.rb",
      "spec/spec_helper.rb"

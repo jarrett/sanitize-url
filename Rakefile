@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "sanitize-url"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{Sanitizes untrusted URLs}
+    gem.description = %Q{This gem provides a module called SanitizeUrl, which you can mix-in anywhere you like. It provides a single method: sanitize_url, which accepts a URL and returns one with JavaScript removed. It also prepends the http:// scheme if no valid scheme is found.}
     gem.email = "jarrett@uchicago.edu"
     gem.homepage = "http://github.com/jarrett/sanitize-url"
     gem.authors = ["jarrett"]
