@@ -26,7 +26,6 @@ This gem uses a whitelist approach, killing any schemes that aren't in the list.
 	https://
 	ftp://
 	ftps://
-	mailto://
 	svn://
 	svn+ssh://
 	git://
