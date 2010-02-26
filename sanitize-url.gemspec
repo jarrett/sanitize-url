@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{sanitize-url}
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["jarrett"]
@@ -24,8 +24,10 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "lib/sanitize-url.rb",
+     "sanitize-url.gemspec",
      "spec/sanitize_url_spec.rb",
-     "spec/spec_helper.rb"
+     "spec/spec_helper.rb",
+     "test.rb"
   ]
   s.homepage = %q{http://github.com/jarrett/sanitize-url}
   s.rdoc_options = ["--charset=UTF-8"]
