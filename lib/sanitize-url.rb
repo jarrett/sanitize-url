@@ -4,11 +4,11 @@ module SanitizeUrl
 	ALPHANUMERIC_CHAR_CODES = (48..57).to_a + (65..90).to_a + (97..122).to_a
 	
 	VALID_OPAQUE_SPECIAL_CHARS = ['!', '*', "'", '(', ')', ';', ':', '@', '&', '=', '+', '$', ',', '/', '?', '%', '#', '[', ']', '-', '_', '.', '~']
-	VALID_OPAQUE_SPECIAL_CHAR_CODES = VALID_OPAQUE_SPECIAL_CHARS.collect { |c| c[0] }
+	VALID_OPAQUE_SPECIAL_CHAR_CODES = VALID_OPAQUE_SPECIAL_CHARS.collect { |c| c[0].is_a?(String) ? c.ord : c[0] }
 	VALID_OPAQUE_CHAR_CODES = ALPHANUMERIC_CHAR_CODES + VALID_OPAQUE_SPECIAL_CHAR_CODES
 	
 	VALID_SCHEME_SPECIAL_CHARS = ['+', '.', '-']
-	VALID_SCHEME_SPECIAL_CHAR_CODES = VALID_SCHEME_SPECIAL_CHARS.collect { |c| c[0] }
+	VALID_SCHEME_SPECIAL_CHAR_CODES = VALID_SCHEME_SPECIAL_CHARS.collect { |c| c[0].is_a?(String) ? c.ord : c[0] }
 	VALID_SCHEME_CHAR_CODES = ALPHANUMERIC_CHAR_CODES + VALID_SCHEME_SPECIAL_CHAR_CODES
 	
 	HTTP_STYLE_SCHEMES = ['http', 'https', 'ftp', 'ftps', 'svn', 'svn+ssh', 'git'] # Common schemes whose format should be "scheme://" instead of "scheme:"
@@ -94,7 +94,8 @@ module SanitizeUrl
 	def self.char_or_url_encoded(code) #:nodoc:
 		if url_encode?(code)
 			utf_8_str = ([code.to_i].pack('U'))
-			'%' + utf_8_str.unpack('H2' * utf_8_str.length).join('%').upcase
+			length = utf_8_str.respond_to?(:bytes) ? utf_8_str.bytes.to_a.length : utf_8_str.length
+			'%' + utf_8_str.unpack('H2' * length).join('%').upcase
 		else
 			code.chr
 		end
