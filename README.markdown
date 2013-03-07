@@ -1,3 +1,8 @@
+Warning: Old Software
+=====================
+
+I haven't looked at or updated this gem in years. I'm still leaving it up on GitHub just in case anyone wants it. But be warned: It's not current, and I can't guarantee it addresses every contemporary security problem with user-supplied URLs.
+
 sanitize-url
 ============
 
@@ -61,6 +66,7 @@ http://github.com/inbox/new/jarrett
 
 For most projects, I prefer that people use GitHub's issue tracker. But given the sensitive nature of security vulnerabilities, I prefer private messages for this one.
 
-== Copyright
+Copyright
+=========
 
 Copyright (c) 2010 Jarrett Colby. See LICENSE for details.
