@@ -71,7 +71,7 @@ describe SanitizeUrl do
 			sanitize_url('www.example.com').should == 'http://www.example.com'
 		end
 		
-		it 'prepends default_scheme option if no scheme is given and defauult_scheme option is set' do
+		it 'prepends default_scheme option if no scheme is given and default_scheme option is set' do
 			sanitize_url('www.example.com', :default_scheme => 'https').should == 'https://www.example.com'
 		end
 		
