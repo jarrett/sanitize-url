@@ -21,6 +21,7 @@ module SanitizeUrl
 		raise(ArgumentError, 'options[:schemes] must be an array') if options.has_key?(:schemes) and !options[:schemes].is_a?(Array)
 		options = {
 			:replace_evil_with => '',
+			:default_scheme => 'http',
 			:schemes => ['http', 'https', 'ftp', 'ftps', 'mailto', 'svn', 'svn+ssh', 'git']
 		}.merge(options)
 		
@@ -38,7 +39,7 @@ module SanitizeUrl
 			return options[:replace_evil_with] if unescaped_opaque.nil? or unescaped_opaque.empty? or unescaped_opaque.match(/^\/+$/)
 		else
 			# Use http as the best guest, and the rest of the URL will be considered opaque
-			dirty_scheme = 'http'
+			dirty_scheme = options[:default_scheme]
 			unescaped_opaque = url
 		end
 		# Remove URL encoding from the scheme

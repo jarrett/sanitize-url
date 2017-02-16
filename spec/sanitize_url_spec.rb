@@ -71,6 +71,10 @@ describe SanitizeUrl do
 			sanitize_url('www.example.com').should == 'http://www.example.com'
 		end
 		
+		it 'prepends default_scheme option if no scheme is given and default_scheme option is set' do
+			sanitize_url('www.example.com', :default_scheme => 'https').should == 'https://www.example.com'
+		end
+		
 		it 'replaces evil URLs that are encoded with Unicode numerical character references' do
 			[
 				'&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;&#108;&#101;&#114;&#116;&#40;&#39;&#49;&#39;&#41;',
