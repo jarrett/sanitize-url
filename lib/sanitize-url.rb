@@ -18,6 +18,7 @@ module SanitizeUrl
 	#   sanitize_url('javascript:alert("XSS")', :replace_evil_with => 'Replaced')
 	#   sanitize_url('ftp://example.com', :schemes => ['http', 'https'])
 	def sanitize_url(url, options = {})
+		return if url.blank?
 		raise(ArgumentError, 'options[:schemes] must be an array') if options.has_key?(:schemes) and !options[:schemes].is_a?(Array)
 		options = {
 			:replace_evil_with => '',
